@@ -1,62 +1,39 @@
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
+// TODO: make this extend Iterator to allow the nextTranslation() method.
 public class TranslationRequester extends Thread {
 
-  ExecutorService translationsExecutor;
-  public List<String> inputs = new LinkedList<String>();
-  public List<String> results = new LinkedList<String>();
-  public int threadNum;
+  private final Decoder decoderRunner;
+  private final String[] inputs;
+  private List<String> translations = new LinkedList<String>();
+  private final int threadNum;
 
-  public TranslationRequester(ExecutorService pool, String[] inputs, int threadNum) {
+  public TranslationRequester(Decoder decoderRunner, String[] inputs,
+                              int threadNum) {
+    this.decoderRunner = decoderRunner;
+    this.inputs = inputs;
     this.threadNum = threadNum;
-    translationsExecutor = pool;
-    for (String input : inputs) {
-      this.inputs.add(threadNum + input);
-    }
   }
+
 
   @Override
   public void run() {
+    setTranslations(decoderRunner.decodeAll(inputs, getThreadNum()));
+    // All the translations happened, so print done.
+    System.out.print("[" + getThreadNum() + "done]");
+  }
 
-    final Translator translator = new SimpleTranslator();
-    Queue<Future<String>> translations = new LinkedList<Future<String>>();
+  public synchronized List<String> getTranslations() {
+    return translations;
+  }
 
-    // Initiate translations, store them in a Queue
-    for (final String input : inputs) {
-      System.out.print(input + " ");
-      Future<String> translFuture =
-          translationsExecutor.submit(new Callable<String>() {
-            @Override
-            public String call() {
-              return translator.translate(input);
-            }
-          });
-      translations.add(translFuture);
-    }
-    // Get translation back.
-    while (!translations.isEmpty()) {
-      Future<String> translation = translations.peek();
-      if (translation.isDone()) {
-        try {
-          String result = translation.get();
-          System.out.print(result);
-          results.add(result);
-        } catch (InterruptedException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        } catch (ExecutionException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        } // use
-        translations.remove();
-      }
-    }
+  public synchronized void setTranslations(List<String> translations) {
+    this.translations = translations;
+  }
+
+  public synchronized int getThreadNum() {
+    return threadNum;
   }
 
 }
