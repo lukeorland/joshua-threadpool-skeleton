@@ -2,6 +2,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 
+
+
 public class JoshuaDecoderApp {
 
   public static void main(String[] args) {
@@ -16,24 +18,24 @@ public class JoshuaDecoderApp {
 
     // Create a few Translation Requester threads
     int numRequests = 4;
-    List<TranslationRequester> requests =
-        new LinkedList<TranslationRequester>();
+    List<Translator> requests =
+        new LinkedList<Translator>();
 
     for (int i = 0; i < numRequests; i++) {
-      TranslationRequester tr = new TranslationRequester(decoder, inputs, i);
+      Translator tr = new Translator(decoder, inputs, i);
       requests.add(tr);
     }
-    for (TranslationRequester tr : requests) {
+    for (Translator tr : requests) {
       tr.start();
     }
-    for (TranslationRequester tr : requests) {
+    for (Translator tr : requests) {
       try {
         tr.join();
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
     }
-    for (TranslationRequester tr : requests) {
+    for (Translator tr : requests) {
 
       // All the translations happened, so print them together.
       System.out.println();
