@@ -7,6 +7,10 @@ import java.util.concurrent.Future;
 
 public final class DecoderRunner implements Decoder {
 
+  protected String translateInput(String input) {
+    return input + "t,";
+  }
+
   public class DecoderCallable implements Callable<String> {
 
     private String input;
@@ -23,7 +27,7 @@ public final class DecoderRunner implements Decoder {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-      return getInput() + "t,";
+      return translateInput(getInput());
     }
 
     public synchronized String getInput() {
